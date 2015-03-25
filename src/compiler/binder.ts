@@ -574,3 +574,4 @@ module ts {
         }
     }
 }
+// editing binder in notepad while git is on iss53 branch
