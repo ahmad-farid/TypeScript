@@ -574,3 +574,4 @@ module ts {
         }
     }
 }
+// change first done in iss53 branch

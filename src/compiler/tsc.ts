@@ -510,3 +510,4 @@ module ts {
 }
 
 ts.executeCommandLine(ts.sys.args);
+// comment 3
