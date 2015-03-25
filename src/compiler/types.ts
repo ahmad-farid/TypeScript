@@ -1782,3 +1782,4 @@ module ts {
         getModificationCount(): number;
     }
 }
+// this is a comment for the second commit
