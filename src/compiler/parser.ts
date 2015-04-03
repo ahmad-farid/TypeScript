@@ -352,26 +352,26 @@ module ts {
 
     function parsingContextErrors(context: ParsingContext): DiagnosticMessage {
         switch (context) {
-            case ParsingContext.SourceElements:           return Diagnostics.Declaration_or_statement_expected;
-            case ParsingContext.ModuleElements:           return Diagnostics.Declaration_or_statement_expected;
-            case ParsingContext.BlockStatements:          return Diagnostics.Statement_expected;
-            case ParsingContext.SwitchClauses:            return Diagnostics.case_or_default_expected;
-            case ParsingContext.SwitchClauseStatements:   return Diagnostics.Statement_expected;
-            case ParsingContext.TypeMembers:              return Diagnostics.Property_or_signature_expected;
-            case ParsingContext.ClassMembers:             return Diagnostics.Unexpected_token_A_constructor_method_accessor_or_property_was_expected;
-            case ParsingContext.EnumMembers:              return Diagnostics.Enum_member_expected;
-            case ParsingContext.HeritageClauseElement:    return Diagnostics.Expression_expected;
-            case ParsingContext.VariableDeclarations:     return Diagnostics.Variable_declaration_expected;
-            case ParsingContext.ObjectBindingElements:    return Diagnostics.Property_destructuring_pattern_expected;
-            case ParsingContext.ArrayBindingElements:     return Diagnostics.Array_element_destructuring_pattern_expected;
-            case ParsingContext.ArgumentExpressions:      return Diagnostics.Argument_expression_expected;
-            case ParsingContext.ObjectLiteralMembers:     return Diagnostics.Property_assignment_expected;
-            case ParsingContext.ArrayLiteralMembers:      return Diagnostics.Expression_or_comma_expected;
-            case ParsingContext.Parameters:               return Diagnostics.Parameter_declaration_expected;
-            case ParsingContext.TypeParameters:           return Diagnostics.Type_parameter_declaration_expected;
-            case ParsingContext.TypeArguments:            return Diagnostics.Type_argument_expected;
-            case ParsingContext.TupleElementTypes:        return Diagnostics.Type_expected;
-            case ParsingContext.HeritageClauses:          return Diagnostics.Unexpected_token_expected;
+            case ParsingContext.SourceElements: return Diagnostics.Declaration_or_statement_expected;
+            case ParsingContext.ModuleElements: return Diagnostics.Declaration_or_statement_expected;
+            case ParsingContext.BlockStatements: return Diagnostics.Statement_expected;
+            case ParsingContext.SwitchClauses: return Diagnostics.case_or_default_expected;
+            case ParsingContext.SwitchClauseStatements: return Diagnostics.Statement_expected;
+            case ParsingContext.TypeMembers: return Diagnostics.Property_or_signature_expected;
+            case ParsingContext.ClassMembers: return Diagnostics.Unexpected_token_A_constructor_method_accessor_or_property_was_expected;
+            case ParsingContext.EnumMembers: return Diagnostics.Enum_member_expected;
+            case ParsingContext.HeritageClauseElement: return Diagnostics.Expression_expected;
+            case ParsingContext.VariableDeclarations: return Diagnostics.Variable_declaration_expected;
+            case ParsingContext.ObjectBindingElements: return Diagnostics.Property_destructuring_pattern_expected;
+            case ParsingContext.ArrayBindingElements: return Diagnostics.Array_element_destructuring_pattern_expected;
+            case ParsingContext.ArgumentExpressions: return Diagnostics.Argument_expression_expected;
+            case ParsingContext.ObjectLiteralMembers: return Diagnostics.Property_assignment_expected;
+            case ParsingContext.ArrayLiteralMembers: return Diagnostics.Expression_or_comma_expected;
+            case ParsingContext.Parameters: return Diagnostics.Parameter_declaration_expected;
+            case ParsingContext.TypeParameters: return Diagnostics.Type_parameter_declaration_expected;
+            case ParsingContext.TypeArguments: return Diagnostics.Type_argument_expected;
+            case ParsingContext.TupleElementTypes: return Diagnostics.Type_expected;
+            case ParsingContext.HeritageClauses: return Diagnostics.Unexpected_token_expected;
             case ParsingContext.ImportOrExportSpecifiers: return Diagnostics.Identifier_expected;
         }
     };
@@ -865,7 +865,7 @@ module ts {
     /// Should be called only on prologue directives (isPrologueDirective(node) should be true)
     function isUseStrictPrologueDirective(sourceFile: SourceFile, node: Node): boolean {
         Debug.assert(isPrologueDirective(node));
-        let nodeText = getSourceTextOfNodeFromSourceFile(sourceFile,(<ExpressionStatement>node).expression);
+        let nodeText = getSourceTextOfNodeFromSourceFile(sourceFile, (<ExpressionStatement>node).expression);
 
         // Note: the node text must be exactly "use strict" or 'use strict'.  It is not ok for the
         // string to contain unicode escapes (as per ES5).
@@ -1459,7 +1459,7 @@ module ts {
 
             return node;
         }
-        
+
         function createMissingNode(kind: SyntaxKind, reportAtCurrentPosition: boolean, diagnosticMessage: DiagnosticMessage, arg0?: any): Node {
             if (reportAtCurrentPosition) {
                 parseErrorAtPosition(scanner.getStartPos(), 0, diagnosticMessage, arg0);
@@ -2423,10 +2423,10 @@ module ts {
         }
 
         function fillSignature(
-                returnToken: SyntaxKind,
-                yieldAndGeneratorParameterContext: boolean,
-                requireCompleteParameterList: boolean,
-                signature: SignatureDeclaration): void {
+            returnToken: SyntaxKind,
+            yieldAndGeneratorParameterContext: boolean,
+            requireCompleteParameterList: boolean,
+            signature: SignatureDeclaration): void {
             let returnTokenRequired = returnToken === SyntaxKind.EqualsGreaterThanToken;
             signature.typeParameters = parseTypeParameters();
             signature.parameters = parseParameterList(yieldAndGeneratorParameterContext, requireCompleteParameterList);
@@ -3750,9 +3750,9 @@ module ts {
 
                 case SyntaxKind.CommaToken:                     // foo<x>,
                 case SyntaxKind.OpenBraceToken:                 // foo<x> {
-                    // We don't want to treat these as type arguments.  Otherwise we'll parse this
-                    // as an invocation expression.  Instead, we want to parse out the expression 
-                    // in isolation from the type arguments.
+                // We don't want to treat these as type arguments.  Otherwise we'll parse this
+                // as an invocation expression.  Instead, we want to parse out the expression 
+                // in isolation from the type arguments.
 
                 default:
                     // Anything else treat as an expression.
@@ -3815,7 +3815,7 @@ module ts {
         function parseArgumentOrArrayLiteralElement(): Expression {
             return token === SyntaxKind.DotDotDotToken ? parseSpreadElement() :
                 token === SyntaxKind.CommaToken ? <Expression>createNode(SyntaxKind.OmittedExpression) :
-                parseAssignmentExpressionOrHigher();
+                    parseAssignmentExpressionOrHigher();
         }
 
         function parseArgumentExpression(): Expression {
@@ -5286,7 +5286,7 @@ module ts {
         function processReferenceComments(sourceFile: SourceFile): void {
             let triviaScanner = createScanner(sourceFile.languageVersion, /*skipTrivia*/false, sourceText);
             let referencedFiles: FileReference[] = [];
-            let amdDependencies: {path: string; name: string}[] = [];
+            let amdDependencies: { path: string; name: string }[] = [];
             let amdModuleName: string;
 
             // Keep scanning all the leading trivia in the file until we get to something that
@@ -5301,7 +5301,7 @@ module ts {
                     break;
                 }
 
-                let range = { pos: triviaScanner.getTokenPos(), end: triviaScanner.getTextPos() };
+                let range = { pos: triviaScanner.getTokenPos(), end: triviaScanner.getTextPos(), kind: triviaScanner.getToken() };
 
                 let comment = sourceText.substring(range.pos, range.end);
                 let referencePathMatchResult = getFileReferenceFromReferencePath(comment, range);
@@ -5334,7 +5334,7 @@ module ts {
                         let pathMatchResult = pathRegex.exec(comment);
                         let nameMatchResult = nameRegex.exec(comment);
                         if (pathMatchResult) {
-                            let amdDependency = {path: pathMatchResult[2], name: nameMatchResult ? nameMatchResult[2] : undefined };
+                            let amdDependency = { path: pathMatchResult[2], name: nameMatchResult ? nameMatchResult[2] : undefined };
                             amdDependencies.push(amdDependency);
                         }
                     }
@@ -5349,10 +5349,10 @@ module ts {
         function setExternalModuleIndicator(sourceFile: SourceFile) {
             sourceFile.externalModuleIndicator = forEach(sourceFile.statements, node =>
                 node.flags & NodeFlags.Export
-                || node.kind === SyntaxKind.ImportEqualsDeclaration && (<ImportEqualsDeclaration>node).moduleReference.kind === SyntaxKind.ExternalModuleReference
-                || node.kind === SyntaxKind.ImportDeclaration
-                || node.kind === SyntaxKind.ExportAssignment
-                || node.kind === SyntaxKind.ExportDeclaration
+                    || node.kind === SyntaxKind.ImportEqualsDeclaration && (<ImportEqualsDeclaration>node).moduleReference.kind === SyntaxKind.ExternalModuleReference
+                    || node.kind === SyntaxKind.ImportDeclaration
+                    || node.kind === SyntaxKind.ExportAssignment
+                    || node.kind === SyntaxKind.ExportDeclaration
                     ? node
                     : undefined);
         }

@@ -267,8 +267,8 @@ module ts {
         let pos = 0;
         let lineStart = 0;
         while (pos < text.length) {
-           let ch = text.charCodeAt(pos++);
-           switch (ch) {
+            let ch = text.charCodeAt(pos++);
+            switch (ch) {
                 case CharacterCodes.carriageReturn:
                     if (text.charCodeAt(pos) === CharacterCodes.lineFeed) {
                         pos++;
@@ -523,6 +523,7 @@ module ts {
                     let nextChar = text.charCodeAt(pos + 1);
                     let hasTrailingNewLine = false;
                     if (nextChar === CharacterCodes.slash || nextChar === CharacterCodes.asterisk) {
+                        let kind = nextChar === CharacterCodes.slash ? SyntaxKind.SingleLineCommentTrivia : SyntaxKind.MultiLineCommentTrivia;
                         let startPos = pos;
                         pos += 2;
                         if (nextChar === CharacterCodes.slash) {
@@ -548,7 +549,7 @@ module ts {
                                 result = [];
                             }
 
-                            result.push({ pos: startPos, end: pos, hasTrailingNewLine: hasTrailingNewLine });
+                            result.push({ pos: startPos, end: pos, hasTrailingNewLine: hasTrailingNewLine, kind: kind });
                         }
                         continue;
                     }
@@ -830,7 +831,7 @@ module ts {
                     
                     // '\uDDDD'
                     return scanHexadecimalEscape(/*numDigits*/ 4)
-                    
+
                 case CharacterCodes.x:
                     // '\xDD'
                     return scanHexadecimalEscape(/*numDigits*/ 2)
@@ -841,7 +842,7 @@ module ts {
                     if (pos < len && text.charCodeAt(pos) === CharacterCodes.lineFeed) {
                         pos++;
                     }
-                    // fall through
+                // fall through
                 case CharacterCodes.lineFeed:
                 case CharacterCodes.lineSeparator:
                 case CharacterCodes.paragraphSeparator:
@@ -850,10 +851,10 @@ module ts {
                     return String.fromCharCode(ch);
             }
         }
-        
+
         function scanHexadecimalEscape(numDigits: number): string {
             let escapedValue = scanExactNumberOfHexDigits(numDigits);
-            
+
             if (escapedValue >= 0) {
                 return String.fromCharCode(escapedValue);
             }
@@ -862,7 +863,7 @@ module ts {
                 return ""
             }
         }
-        
+
         function scanExtendedUnicodeEscape(): string {
             let escapedValue = scanMinimumNumberOfHexDigits(1);
             let isInvalidExtendedEscape = false;
@@ -900,14 +901,14 @@ module ts {
         // Derived from the 10.1.1 UTF16Encoding of the ES6 Spec.
         function utf16EncodeAsString(codePoint: number): string {
             Debug.assert(0x0 <= codePoint && codePoint <= 0x10FFFF);
-            
+
             if (codePoint <= 65535) {
                 return String.fromCharCode(codePoint);
             }
-            
+
             let codeUnit1 = Math.floor((codePoint - 65536) / 1024) + 0xD800;
             let codeUnit2 = ((codePoint - 65536) % 1024) + 0xDC00;
-            
+
             return String.fromCharCode(codeUnit1, codeUnit2);
         }
 
@@ -969,7 +970,7 @@ module ts {
             let value = 0;
             // For counting number of digits; Valid binaryIntegerLiteral must have at least one binary digit following B or b.
             // Similarly valid octalIntegerLiteral must have at least one octal digit following o or O.
-            let numberOfDigits = 0;  
+            let numberOfDigits = 0;
             while (true) {
                 let ch = text.charCodeAt(pos);
                 let valueOfCh = ch - CharacterCodes._0;
@@ -1037,7 +1038,7 @@ module ts {
                             }
                             return pos += 2, token = SyntaxKind.ExclamationEqualsToken;
                         }
-                        return pos++, token = SyntaxKind.ExclamationToken;
+                        return pos++ , token = SyntaxKind.ExclamationToken;
                     case CharacterCodes.doubleQuote:
                     case CharacterCodes.singleQuote:
                         tokenValue = scanString();
@@ -1048,7 +1049,7 @@ module ts {
                         if (text.charCodeAt(pos + 1) === CharacterCodes.equals) {
                             return pos += 2, token = SyntaxKind.PercentEqualsToken;
                         }
-                        return pos++, token = SyntaxKind.PercentToken;
+                        return pos++ , token = SyntaxKind.PercentToken;
                     case CharacterCodes.ampersand:
                         if (text.charCodeAt(pos + 1) === CharacterCodes.ampersand) {
                             return pos += 2, token = SyntaxKind.AmpersandAmpersandToken;
@@ -1056,16 +1057,16 @@ module ts {
                         if (text.charCodeAt(pos + 1) === CharacterCodes.equals) {
                             return pos += 2, token = SyntaxKind.AmpersandEqualsToken;
                         }
-                        return pos++, token = SyntaxKind.AmpersandToken;
+                        return pos++ , token = SyntaxKind.AmpersandToken;
                     case CharacterCodes.openParen:
-                        return pos++, token = SyntaxKind.OpenParenToken;
+                        return pos++ , token = SyntaxKind.OpenParenToken;
                     case CharacterCodes.closeParen:
-                        return pos++, token = SyntaxKind.CloseParenToken;
+                        return pos++ , token = SyntaxKind.CloseParenToken;
                     case CharacterCodes.asterisk:
                         if (text.charCodeAt(pos + 1) === CharacterCodes.equals) {
                             return pos += 2, token = SyntaxKind.AsteriskEqualsToken;
                         }
-                        return pos++, token = SyntaxKind.AsteriskToken;
+                        return pos++ , token = SyntaxKind.AsteriskToken;
                     case CharacterCodes.plus:
                         if (text.charCodeAt(pos + 1) === CharacterCodes.plus) {
                             return pos += 2, token = SyntaxKind.PlusPlusToken;
@@ -1073,9 +1074,9 @@ module ts {
                         if (text.charCodeAt(pos + 1) === CharacterCodes.equals) {
                             return pos += 2, token = SyntaxKind.PlusEqualsToken;
                         }
-                        return pos++, token = SyntaxKind.PlusToken;
+                        return pos++ , token = SyntaxKind.PlusToken;
                     case CharacterCodes.comma:
-                        return pos++, token = SyntaxKind.CommaToken;
+                        return pos++ , token = SyntaxKind.CommaToken;
                     case CharacterCodes.minus:
                         if (text.charCodeAt(pos + 1) === CharacterCodes.minus) {
                             return pos += 2, token = SyntaxKind.MinusMinusToken;
@@ -1083,7 +1084,7 @@ module ts {
                         if (text.charCodeAt(pos + 1) === CharacterCodes.equals) {
                             return pos += 2, token = SyntaxKind.MinusEqualsToken;
                         }
-                        return pos++, token = SyntaxKind.MinusToken;
+                        return pos++ , token = SyntaxKind.MinusToken;
                     case CharacterCodes.dot:
                         if (isDigit(text.charCodeAt(pos + 1))) {
                             tokenValue = "" + scanNumber();
@@ -1092,7 +1093,7 @@ module ts {
                         if (text.charCodeAt(pos + 1) === CharacterCodes.dot && text.charCodeAt(pos + 2) === CharacterCodes.dot) {
                             return pos += 3, token = SyntaxKind.DotDotDotToken;
                         }
-                        return pos++, token = SyntaxKind.DotToken;
+                        return pos++ , token = SyntaxKind.DotToken;
                     case CharacterCodes.slash:
                         // Single-line comment
                         if (text.charCodeAt(pos + 1) === CharacterCodes.slash) {
@@ -1150,7 +1151,7 @@ module ts {
                             return pos += 2, token = SyntaxKind.SlashEqualsToken;
                         }
 
-                        return pos++, token = SyntaxKind.SlashToken;
+                        return pos++ , token = SyntaxKind.SlashToken;
 
                     case CharacterCodes._0:
                         if (pos + 2 < len && (text.charCodeAt(pos + 1) === CharacterCodes.X || text.charCodeAt(pos + 1) === CharacterCodes.x)) {
@@ -1188,9 +1189,9 @@ module ts {
                             tokenValue = "" + scanOctalDigits();
                             return token = SyntaxKind.NumericLiteral;
                         }
-                        // This fall-through is a deviation from the EcmaScript grammar. The grammar says that a leading zero
-                        // can only be followed by an octal digit, a dot, or the end of the number literal. However, we are being
-                        // permissive and allowing decimal digits of the form 08* and 09* (which many browsers also do).
+                    // This fall-through is a deviation from the EcmaScript grammar. The grammar says that a leading zero
+                    // can only be followed by an octal digit, a dot, or the end of the number literal. However, we are being
+                    // permissive and allowing decimal digits of the form 08* and 09* (which many browsers also do).
                     case CharacterCodes._1:
                     case CharacterCodes._2:
                     case CharacterCodes._3:
@@ -1203,9 +1204,9 @@ module ts {
                         tokenValue = "" + scanNumber();
                         return token = SyntaxKind.NumericLiteral;
                     case CharacterCodes.colon:
-                        return pos++, token = SyntaxKind.ColonToken;
+                        return pos++ , token = SyntaxKind.ColonToken;
                     case CharacterCodes.semicolon:
-                        return pos++, token = SyntaxKind.SemicolonToken;
+                        return pos++ , token = SyntaxKind.SemicolonToken;
                     case CharacterCodes.lessThan:
                         if (isConflictMarkerTrivia(text, pos)) {
                             pos = scanConflictMarkerTrivia(text, pos, error);
@@ -1226,7 +1227,7 @@ module ts {
                         if (text.charCodeAt(pos + 1) === CharacterCodes.equals) {
                             return pos += 2, token = SyntaxKind.LessThanEqualsToken;
                         }
-                        return pos++, token = SyntaxKind.LessThanToken;
+                        return pos++ , token = SyntaxKind.LessThanToken;
                     case CharacterCodes.equals:
                         if (isConflictMarkerTrivia(text, pos)) {
                             pos = scanConflictMarkerTrivia(text, pos, error);
@@ -1247,7 +1248,7 @@ module ts {
                         if (text.charCodeAt(pos + 1) === CharacterCodes.greaterThan) {
                             return pos += 2, token = SyntaxKind.EqualsGreaterThanToken;
                         }
-                        return pos++, token = SyntaxKind.EqualsToken;
+                        return pos++ , token = SyntaxKind.EqualsToken;
                     case CharacterCodes.greaterThan:
                         if (isConflictMarkerTrivia(text, pos)) {
                             pos = scanConflictMarkerTrivia(text, pos, error);
@@ -1259,20 +1260,20 @@ module ts {
                             }
                         }
 
-                        return pos++, token = SyntaxKind.GreaterThanToken;
+                        return pos++ , token = SyntaxKind.GreaterThanToken;
                     case CharacterCodes.question:
-                        return pos++, token = SyntaxKind.QuestionToken;
+                        return pos++ , token = SyntaxKind.QuestionToken;
                     case CharacterCodes.openBracket:
-                        return pos++, token = SyntaxKind.OpenBracketToken;
+                        return pos++ , token = SyntaxKind.OpenBracketToken;
                     case CharacterCodes.closeBracket:
-                        return pos++, token = SyntaxKind.CloseBracketToken;
+                        return pos++ , token = SyntaxKind.CloseBracketToken;
                     case CharacterCodes.caret:
                         if (text.charCodeAt(pos + 1) === CharacterCodes.equals) {
                             return pos += 2, token = SyntaxKind.CaretEqualsToken;
                         }
-                        return pos++, token = SyntaxKind.CaretToken;
+                        return pos++ , token = SyntaxKind.CaretToken;
                     case CharacterCodes.openBrace:
-                        return pos++, token = SyntaxKind.OpenBraceToken;
+                        return pos++ , token = SyntaxKind.OpenBraceToken;
                     case CharacterCodes.bar:
                         if (text.charCodeAt(pos + 1) === CharacterCodes.bar) {
                             return pos += 2, token = SyntaxKind.BarBarToken;
@@ -1280,13 +1281,13 @@ module ts {
                         if (text.charCodeAt(pos + 1) === CharacterCodes.equals) {
                             return pos += 2, token = SyntaxKind.BarEqualsToken;
                         }
-                        return pos++, token = SyntaxKind.BarToken;
+                        return pos++ , token = SyntaxKind.BarToken;
                     case CharacterCodes.closeBrace:
-                        return pos++, token = SyntaxKind.CloseBraceToken;
+                        return pos++ , token = SyntaxKind.CloseBraceToken;
                     case CharacterCodes.tilde:
-                        return pos++, token = SyntaxKind.TildeToken;
+                        return pos++ , token = SyntaxKind.TildeToken;
                     case CharacterCodes.at:
-                        return pos++, token = SyntaxKind.AtToken;
+                        return pos++ , token = SyntaxKind.AtToken;
                     case CharacterCodes.backslash:
                         let cookedChar = peekUnicodeEscape();
                         if (cookedChar >= 0 && isIdentifierStart(cookedChar)) {
@@ -1295,7 +1296,7 @@ module ts {
                             return token = getIdentifierToken();
                         }
                         error(Diagnostics.Invalid_character);
-                        return pos++, token = SyntaxKind.Unknown;
+                        return pos++ , token = SyntaxKind.Unknown;
                     default:
                         if (isIdentifierStart(ch)) {
                             pos++;
@@ -1316,7 +1317,7 @@ module ts {
                             continue;
                         }
                         error(Diagnostics.Invalid_character);
-                        return pos++, token = SyntaxKind.Unknown;
+                        return pos++ , token = SyntaxKind.Unknown;
                 }
             }
         }
@@ -1333,10 +1334,10 @@ module ts {
                     if (text.charCodeAt(pos + 1) === CharacterCodes.equals) {
                         return pos += 2, token = SyntaxKind.GreaterThanGreaterThanEqualsToken;
                     }
-                    return pos++, token = SyntaxKind.GreaterThanGreaterThanToken;
+                    return pos++ , token = SyntaxKind.GreaterThanGreaterThanToken;
                 }
                 if (text.charCodeAt(pos) === CharacterCodes.equals) {
-                    return pos++, token = SyntaxKind.GreaterThanEqualsToken;
+                    return pos++ , token = SyntaxKind.GreaterThanEqualsToken;
                 }
             }
             return token;
