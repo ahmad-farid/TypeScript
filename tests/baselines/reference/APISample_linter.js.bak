@@ -1,71 +1,70 @@
-//// [tests/cases/compiler/APISample_transform.ts] ////
+//// [tests/cases/compiler/APISample_linter.ts] ////
 
-//// [APISample_transform.ts]
+//// [APISample_linter.ts]
 
 /*
  * Note: This test is a public API sample. The sample sources can be found 
-         at: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#a-simple-transform-function
+         at: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#traversing-the-ast-with-a-little-linter
  *       Please log a "breaking change" issue for any API breaking change affecting this issue
  */
 
 declare var process: any;
 declare var console: any;
 declare var fs: any;
-declare var path: any;
-declare var os: any;
 
 import ts = require("typescript");
 
-function transform(contents: string, compilerOptions: ts.CompilerOptions = {}) {
-    // Sources
-    var files = {
-        "file.ts": contents,
-        "lib.d.ts": fs.readFileSync(ts.getDefaultLibFilePath(compilerOptions)).toString()
-    };
+export function delint(sourceFile: ts.SourceFile) {
+    delintNode(sourceFile);
 
-    // Generated outputs
-    var outputs = [];
+    function delintNode(node: ts.Node) {
+        switch (node.kind) {
+            case ts.SyntaxKind.ForStatement:
+            case ts.SyntaxKind.ForInStatement:
+            case ts.SyntaxKind.WhileStatement:
+            case ts.SyntaxKind.DoStatement:
+                if ((<ts.IterationStatement>node).statement.kind !== ts.SyntaxKind.Block) {
+                    report(node, "A looping statement's contents should be wrapped in a block body.");
+                }
+                break;
+            case ts.SyntaxKind.IfStatement:
+                var ifStatement = (<ts.IfStatement>node);
+                if (ifStatement.thenStatement.kind !== ts.SyntaxKind.Block) {
+                    report(ifStatement.thenStatement, "An if statement's contents should be wrapped in a block body.");
+                }
+                if (ifStatement.elseStatement &&
+                    ifStatement.elseStatement.kind !== ts.SyntaxKind.Block && ifStatement.elseStatement.kind !== ts.SyntaxKind.IfStatement) {
+                    report(ifStatement.elseStatement, "An else statement's contents should be wrapped in a block body.");
+                }
+                break;
 
-    // Create a compilerHost object to allow the compiler to read and write files
-    var compilerHost = {
-        getSourceFile: (fileName, target) => {
-            return files[fileName] !== undefined ?
-                ts.createSourceFile(fileName, files[fileName], target) : undefined;
-        },
-        writeFile: (name, text, writeByteOrderMark) => {
-            outputs.push({ name: name, text: text, writeByteOrderMark: writeByteOrderMark });
-        },
-        getDefaultLibFileName: () => "lib.d.ts",
-        useCaseSensitiveFileNames: () => false,
-        getCanonicalFileName: (fileName) => fileName,
-        getCurrentDirectory: () => "",
-        getNewLine: () => "\n"
-    };
+            case ts.SyntaxKind.BinaryExpression:
+                var op = (<ts.BinaryExpression>node).operatorToken.kind;
 
-    // Create a program from inputs
-    var program = ts.createProgram(["file.ts"], compilerOptions, compilerHost);
+                if (op === ts.SyntaxKind.EqualsEqualsToken || op === ts.SyntaxKind.ExclamationEqualsToken) {
+                    report(node, "Use '===' and '!=='.")
+                }
+                break;
+        }
 
-    // Query for early errors
-    var errors = ts.getPreEmitDiagnostics(program);
-    var emitResult = program.emit();
+        ts.forEachChild(node, delintNode);
+    }
 
-    errors = errors.concat(emitResult.diagnostics);
-
-    return {
-        outputs: outputs,
-        errors: errors.map(function (e) {
-            return e.file.fileName + "(" + (e.file.getLineAndCharacterOfPosition(e.start).line + 1) + "): "
-                                   + ts.flattenDiagnosticMessageText(e.messageText, os.EOL);
-        })
-    };
+    function report(node: ts.Node, message: string) {
+        var lineChar = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+        console.log(`${sourceFile.fileName} (${lineChar.line + 1},${lineChar.character + 1}): ${message}`)
+    }
 }
 
-// Calling our transform function using a simple TypeScript variable declarations, 
-// and loading the default library like:
-var source = "var x: number  = 'string'";
-var result = transform(source);
+var fileNames = process.argv.slice(2);
+fileNames.forEach(fileName => {
+    // Parse a file
+    var sourceFile = ts.createSourceFile(fileName, fs.readFileSync(fileName).toString(), ts.ScriptTarget.ES6, /*setParentNodes */ true);
 
-console.log(JSON.stringify(result));
+    // delint it
+    delint(sourceFile);
+});
+
 //// [typescript.d.ts]
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved. 
@@ -828,7 +827,6 @@ declare module "typescript" {
     }
     interface CommentRange extends TextRange {
         hasTrailingNewLine?: boolean;
-        kind: SyntaxKind;
     }
     interface SourceFile extends Declaration {
         statements: NodeArray<ModuleElement>;
@@ -2063,53 +2061,54 @@ declare module "typescript" {
 }
 
 
-//// [APISample_transform.js]
+//// [APISample_linter.js]
 /*
  * Note: This test is a public API sample. The sample sources can be found
-         at: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#a-simple-transform-function
+         at: https://github.com/Microsoft/TypeScript/wiki/Using-the-Compiler-API#traversing-the-ast-with-a-little-linter
  *       Please log a "breaking change" issue for any API breaking change affecting this issue
  */
 var ts = require("typescript");
-function transform(contents, compilerOptions) {
-    if (compilerOptions === void 0) { compilerOptions = {}; }
-    // Sources
-    var files = {
-        "file.ts": contents,
-        "lib.d.ts": fs.readFileSync(ts.getDefaultLibFilePath(compilerOptions)).toString()
-    };
-    // Generated outputs
-    var outputs = [];
-    // Create a compilerHost object to allow the compiler to read and write files
-    var compilerHost = {
-        getSourceFile: function (fileName, target) {
-            return files[fileName] !== undefined ?
-                ts.createSourceFile(fileName, files[fileName], target) : undefined;
-        },
-        writeFile: function (name, text, writeByteOrderMark) {
-            outputs.push({ name: name, text: text, writeByteOrderMark: writeByteOrderMark });
-        },
-        getDefaultLibFileName: function () { return "lib.d.ts"; },
-        useCaseSensitiveFileNames: function () { return false; },
-        getCanonicalFileName: function (fileName) { return fileName; },
-        getCurrentDirectory: function () { return ""; },
-        getNewLine: function () { return "\n"; }
-    };
-    // Create a program from inputs
-    var program = ts.createProgram(["file.ts"], compilerOptions, compilerHost);
-    // Query for early errors
-    var errors = ts.getPreEmitDiagnostics(program);
-    var emitResult = program.emit();
-    errors = errors.concat(emitResult.diagnostics);
-    return {
-        outputs: outputs,
-        errors: errors.map(function (e) {
-            return e.file.fileName + "(" + (e.file.getLineAndCharacterOfPosition(e.start).line + 1) + "): "
-                + ts.flattenDiagnosticMessageText(e.messageText, os.EOL);
-        })
-    };
+function delint(sourceFile) {
+    delintNode(sourceFile);
+    function delintNode(node) {
+        switch (node.kind) {
+            case 186 /* ForStatement */:
+            case 187 /* ForInStatement */:
+            case 185 /* WhileStatement */:
+            case 184 /* DoStatement */:
+                if (node.statement.kind !== 179 /* Block */) {
+                    report(node, "A looping statement's contents should be wrapped in a block body.");
+                }
+                break;
+            case 183 /* IfStatement */:
+                var ifStatement = node;
+                if (ifStatement.thenStatement.kind !== 179 /* Block */) {
+                    report(ifStatement.thenStatement, "An if statement's contents should be wrapped in a block body.");
+                }
+                if (ifStatement.elseStatement &&
+                    ifStatement.elseStatement.kind !== 179 /* Block */ && ifStatement.elseStatement.kind !== 183 /* IfStatement */) {
+                    report(ifStatement.elseStatement, "An else statement's contents should be wrapped in a block body.");
+                }
+                break;
+            case 169 /* BinaryExpression */:
+                var op = node.operatorToken.kind;
+                if (op === 28 /* EqualsEqualsToken */ || op === 29 /* ExclamationEqualsToken */) {
+                    report(node, "Use '===' and '!=='.");
+                }
+                break;
+        }
+        ts.forEachChild(node, delintNode);
+    }
+    function report(node, message) {
+        var lineChar = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+        console.log(sourceFile.fileName + " (" + (lineChar.line + 1) + "," + (lineChar.character + 1) + "): " + message);
+    }
 }
-// Calling our transform function using a simple TypeScript variable declarations, 
-// and loading the default library like:
-var source = "var x: number  = 'string'";
-var result = transform(source);
-console.log(JSON.stringify(result));
+exports.delint = delint;
+var fileNames = process.argv.slice(2);
+fileNames.forEach(function (fileName) {
+    // Parse a file
+    var sourceFile = ts.createSourceFile(fileName, fs.readFileSync(fileName).toString(), 2 /* ES6 */, true);
+    // delint it
+    delint(sourceFile);
+});
